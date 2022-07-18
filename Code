@@ -1,0 +1,81 @@
+:- dynamic ([breeze/1,
+             stench/1,
+             wumpus_Loc/1,
+             pit_Loc/1,
+             gold_Loc/1,
+             agent_Loc/1]).
+
+isAdjacent_to([X,Y],Loc) :- (X<4)->  Xright is X+1, Loc=[Xright,Y].
+isAdjacent_to([X,Y],Loc) :- (X>1)->  Xleft is X-1, Loc=[Xleft,Y].
+isAdjacent_to([X,Y],Loc) :- (Y<4)->  Yt is Y+1, Loc=[X,Yt].
+isAdjacent_to([X,Y],Loc) :- (Y>1)->  Yb is Y-1, Loc=[X,Yb].
+
+breeze([X,Y]) :- (pit_Loc(PitLocation),isAdjacent_to([X,Y],PitLocation))->  
+    format('Breeze is in ~p~n',[[X,Y]]); 
+    format('There is no Breeze in ~p~n',[[X,Y]]).
+
+pit([X,Y]) :- forall(isAdjacent_to([X,Y],Loc), (breeze(Loc))), (pit_Loc([X,Y]))-> 
+    		format('Pit is found.').
+
+stench([X,Y]) :- (wumpus_Loc(Loc),isAdjacent_to([X,Y],Loc))->  
+    format('Stench is in ~p~n',[[X,Y]]); 
+    format('There is no Stench in ~p~n',[[X,Y]]).
+
+wumpus([X,Y]) :- forall(isAdjacent_to([X,Y],Loc), stench(Loc)),wumpus_Loc([X,Y]).
+
+safe([X,Y]):- \+ pit_Loc([X,Y]), \+ wumpus_Loc([X,Y]).
+
+grabGold():- write('Gold is grabbed.').
+
+gold([X,Y]):- (gold_Loc([X,Y]))->  
+    format('Gold is found'); 
+    format('Gold is not found').
+
+shootWumpus([X,Y]):- (pit_Loc([X,Y]))->
+    format('Agent died by felling in the pit');
+    format('Agent missed his shoot.');
+ 
+    (wumpus_Loc(Loc), isAdjacent_to([X,Y],Loc))
+    -> 	format('Wumpus is killed in ~p~n',[Loc]); 
+    (wumpus_Loc([X,Y]))
+    ->  format('Killed by Wumpus.');
+    	format('No Wumpus.').
+
+start:-
+    init,
+    assert(agent_Loc([1,1])).
+
+init:-
+
+	% First Scenario
+    %retractall(gold_Loc(_)),
+    %assert(gold_Loc([3,3])),
+    %retractall(wumpus_Loc(_)),
+    %assert(wumpus_Loc([2,4])),
+    %retractall(pit_Loc(_)),
+    %assert(pit_Loc([2,1])),
+    %assert(pit_Loc([4,3])),
+    %retractall(agent_Loc(_)).
+
+    % Second Scenario
+    %retractall(gold_Loc(_)),
+    %assert(gold_Loc([4,3])),
+    %retractall(wumpus_Loc(_)),
+    %assert(wumpus_Loc([2,4])),
+    %retractall(pit_Loc(_)),
+    %assert(pit_Loc([2,1])),
+    %assert(pit_Loc([4,1])),
+    %assert(pit_Loc([3,3])),
+    %assert(pit_Loc([2,3])),
+    %retractall(agent_Loc(_)).
+
+    % Third Scenario
+    retractall(gold_Loc(_)),
+    assert(gold_Loc([2,1])),
+    retractall(wumpus_Loc(_)),
+    assert(wumpus_Loc([1,3])),
+    retractall(pit_Loc(_)),
+    assert(pit_Loc([4,3])),
+    assert(pit_Loc([1,2])),
+    assert(pit_Loc([4,1])),
+    retractall(agent_Loc(_)).
